@@ -1,0 +1,46 @@
+version: "3.3"
+services:
+    db:
+        image: postgres:12
+        ports:
+            - "5432:5432"
+        volumes:
+            - app-db-data:/var/lib/postgresql/data/pgdata
+        networks:
+            - backend
+        env_file:
+            - .env
+        environment:
+            - PGDATA=/var/lib/postgresql/data/pgdata
+    backend:
+        networks:
+            - backend
+        ports:
+            - "80:80"
+        volumes:
+            - ./serverless/app:/app
+        depends_on:
+            - db
+        env_file:
+            - .env
+        build:
+            context: ./paydoor-back
+            dockerfile: backend.dockerfile
+    pgadmin:
+        image: dpage/pgadmin4
+        networks:
+            - backend
+        depends_on:
+            - db
+        env_file:
+            - .env
+        ports:
+            - "5050:80"
+    frontend:
+        build:
+            context: ./paydoor-front
+volumes:
+    app-db-data:
+
+networks:
+    backend:
